@@ -6,7 +6,7 @@ import Merge
 import SwiftUIX
 
 /// A mutable task.
-public class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
+open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     public typealias Body = (Self) -> AnyCancellable
     
     private let previousTask: OpaqueTask?

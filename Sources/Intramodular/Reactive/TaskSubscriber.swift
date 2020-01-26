@@ -12,6 +12,10 @@ open class TaskSubscriber<Success, Error: Swift.Error>: Subscriber {
     
     public internal(set) var subscription: Task<Success, Error>?
     
+    public init() {
+        
+    }
+    
     public final func receive(subscription: Subscription) {
         let subscription = subscription as! Task<Success, Error>
         

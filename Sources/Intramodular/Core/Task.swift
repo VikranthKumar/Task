@@ -6,7 +6,7 @@ import Merge
 import SwiftUIX
 
 /// An opinionated definition of a task.
-public class Task<Success, Error: Swift.Error>: OpaqueTask {    
+open class Task<Success, Error: Swift.Error>: OpaqueTask {
     let statusValueSubject = CurrentValueSubject<Status, Never>(.idle)
     
     public private(set) var name: TaskName = .init(UUID())
@@ -34,7 +34,7 @@ public class Task<Success, Error: Swift.Error>: OpaqueTask {
             .map({ .init($0) })
             .eraseToAnyPublisher()
     }
-
+    
     public init(pipeline: TaskPipeline?) {
         self.pipeline = pipeline
     }

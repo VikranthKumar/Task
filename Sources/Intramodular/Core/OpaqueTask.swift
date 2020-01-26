@@ -5,7 +5,7 @@
 import Merge
 import SwiftUIX
 
-public class OpaqueTask: CustomCombineIdentifierConvertible {
+open class OpaqueTask: CustomCombineIdentifierConvertible {
     public let cancellables = Cancellables()
 
     public var statusDescription: StatusDescription {
