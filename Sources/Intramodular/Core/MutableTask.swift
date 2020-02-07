@@ -7,7 +7,7 @@ import SwiftUIX
 
 /// A mutable task.
 open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
-    public typealias Body = (Self) -> AnyCancellable
+    public typealias Body = (MutableTask) -> AnyCancellable
     
     private let previousTask: OpaqueTask?
     private let previousTaskCancellable: SingleAssignmentAnyCancellable

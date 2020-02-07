@@ -59,9 +59,8 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - API -
-
 extension View {
+    @inline(never)
     public func taskPipeline(_ pipeline: TaskPipeline) -> some View {
         environment(\.taskPipeline, pipeline).environmentObject(pipeline)
     }
