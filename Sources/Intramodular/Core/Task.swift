@@ -58,6 +58,10 @@ extension Task {
     }
     
     public func insert(into pipeline: TaskPipeline) {
+        guard self.pipeline == nil else {
+            return assertionFailure("\(self) is already part of an pipleine")
+        }
+        
         self.pipeline = pipeline
     }
 }

@@ -35,8 +35,10 @@ public final class TaskPipeline: ObservableObject {
             } else {
                 self.taskMap[task.name] = task
             }
-            
+                        
             self.taskStatuses.send((task.name, task.statusDescription))
+            
+            self.objectWillChange.send()
         }
     }
 }
