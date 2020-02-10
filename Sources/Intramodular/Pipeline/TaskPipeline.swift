@@ -6,6 +6,8 @@ import Merge
 import SwiftUIX
 
 public final class TaskPipeline: ObservableObject {
+    public let cancellables = Cancellables()
+    
     private weak var parent: TaskPipeline?
     
     @Published private var taskHistory: [TaskName: [OpaqueTask.StatusDescription]] = [:]
@@ -43,6 +45,12 @@ public final class TaskPipeline: ObservableObject {
     }
 }
 
+extension TaskPipeline {
+    public func lastStatus(for taskName: TaskName) -> OpaqueTask.StatusDescription? {
+        taskHistory[taskName]?.last
+    }
+}
+
 // MARK: - Auxiliary Implementation -
 
 extension TaskPipeline {
@@ -60,6 +68,8 @@ extension EnvironmentValues {
         }
     }
 }
+
+// MARK: - API -
 
 extension View {
     @inline(never)

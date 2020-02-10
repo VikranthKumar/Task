@@ -8,7 +8,6 @@ import SwiftUIX
 /// An interactive control representing a `Task<Success, Error>`.
 public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
     private let action: () -> Task<Success, Error>?
-    private let completion: (Result<Success, Error>) -> ()
     private let label: (Task<Success, Error>.Status) -> Label
     
     @Environment(\.taskName) var taskName
@@ -32,12 +31,10 @@ public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
         }
     }
     
-    public var taskStatus: Task<Success, Error>.Status {
-        return task?.status ?? .idle
-    }
-    
     public var taskStatusDescription: OpaqueTask.StatusDescription {
-        return task?.statusDescription ?? .idle
+        return task?.statusDescription
+            ?? taskName.flatMap({ taskPipeline?.lastStatus(for: $0) })
+            ?? .idle
     }
     
     @State var taskRenewalSubscription: AnyCancellable?
@@ -46,7 +43,7 @@ public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
         Button(action: trigger) {
             buttonStyle.opaque_makeBody(
                 configuration: TaskButtonConfiguration(
-                    label: label(taskStatus).eraseToAnyView(),
+                    label: label(task?.status ?? .idle).eraseToAnyView(),
                     isDisabled: taskDisabled,
                     isInterruptible: taskInterruptible,
                     isRestartable: taskRestartable,
@@ -57,28 +54,6 @@ public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
         .disabled(taskDisabled)
     }
     
-    public init(
-        action: @escaping () -> Task<Success, Error>,
-        completion: @escaping (Result<Success, Error>) -> () = { _ in },
-        @ViewBuilder label: @escaping (Task<Success, Error>.Status) -> Label
-    ) {
-        self.action = { action() }
-        self.completion = completion
-        self.label = label
-    }
-    
-    public init(
-        action: @escaping () -> Task<Success, Error>,
-        completion: @escaping (Result<Success, Error>) -> () = { _ in },
-        @ViewBuilder label: () -> Label
-    ) {
-        let _label = label()
-        
-        self.action = { action() }
-        self.completion = completion
-        self.label = { _ in _label }
-    }
-    
     private func trigger() {
         if !taskRestartable && currentTask != nil {
             return
@@ -87,16 +62,50 @@ public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
         acquireTaskIfNecessary()
     }
     
+    private func subscribe(to task: Task<Success, Error>) {
+        task.statusValueSubject.sink(storeIn: taskPipeline?.cancellables ?? task.cancellables) {
+            self.buttonStyle
+                .receive(status: .init(description: $0.description))
+        }
+        
+        currentTask = task
+    }
+    
     private func acquireTaskIfNecessary() {
         if taskInterruptible {
             if let task = action() {
-                return currentTask = task
+                return subscribe(to: task)
             }
         }
+        
         if let taskName = taskName, let taskPipeline = taskPipeline, let task = taskPipeline[taskName] as? Task<Success, Error> {
             currentTask = task
         } else {
-            currentTask = action()
+            if let task = action() {
+                subscribe(to: task)
+            } else {
+                currentTask = nil
+            }
         }
+    }
+}
+
+extension TaskButton {
+    public init(
+        action: @escaping () -> Task<Success, Error>,
+        @ViewBuilder label: @escaping (Task<Success, Error>.Status) -> Label
+    ) {
+        self.action = { action() }
+        self.label = label
+    }
+    
+    public init(
+        action: @escaping () -> Task<Success, Error>,
+        @ViewBuilder label: () -> Label
+    ) {
+        let _label = label()
+        
+        self.action = { action() }
+        self.label = { _ in _label }
     }
 }

@@ -6,6 +6,11 @@ import Merge
 import SwiftUIX
 
 extension Task {
+    public func onStatus(receiveValue: @escaping (Status) -> ()) {
+        objectWillChange.sink(receiveValue: receiveValue)
+            .store(in: cancellables)
+    }
+    
     public func onStatus(
         _ status: StatusDescription,
         perform action: @escaping (Status) -> ()

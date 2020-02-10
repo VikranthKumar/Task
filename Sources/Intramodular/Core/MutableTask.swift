@@ -47,9 +47,9 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     /// Start the task.
     public override func start() {
         func _start() {
-            bodyCancellable.set(body(self as! Self))
-            
             send(.started)
+
+            bodyCancellable.set(body(self as! Self))
         }
         
         guard statusDescription == .idle else {
