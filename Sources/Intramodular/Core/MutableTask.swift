@@ -35,32 +35,36 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
         if status.isTerminal {
             statusValueSubject.send(completion: .finished)
             
-            bodyCancellable.cancel()
-            cancellables.cancel()
+            queue.async {
+                self.bodyCancellable.cancel()
+                self.cancellables.cancel()
+            }
         }
         
         pipeline?.track(self)
     }
     
-    private func _start() {
-        bodyCancellable.set(body(self as! Self))
-        
-        send(.started)
-    }
-    
     /// Start the task.
     public override func start() {
+        func _start() {
+            bodyCancellable.set(body(self as! Self))
+            
+            send(.started)
+        }
+        
         guard statusDescription == .idle else {
             return
         }
         
         if let previous = previousTask {
-            previous.onSuccess { [unowned self] in
-                self._start()
+            previous.onSuccess {
+                _start()
             }
             
-            previous.onFailure {  [unowned self] in
-                self.cancel()
+            previous.onFailure {
+                self.queue.async {
+                    self.cancel()
+                }
             }
         } else {
             _start()

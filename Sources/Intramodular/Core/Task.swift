@@ -7,6 +7,7 @@ import SwiftUIX
 
 /// An opinionated definition of a task.
 open class Task<Success, Error: Swift.Error>: OpaqueTask {
+    let queue = DispatchQueue(label: "com.vmanot.Task")
     let statusValueSubject = CurrentValueSubject<Status, Never>(.idle)
     
     public private(set) var name: TaskName = .init(UUID())
@@ -50,7 +51,7 @@ open class Task<Success, Error: Swift.Error>: OpaqueTask {
 
 extension Task {
     public func setName(_ name: TaskName) {
-        guard pipeline == nil else {
+        guard self.pipeline == nil else {
             fatalError()
         }
         
