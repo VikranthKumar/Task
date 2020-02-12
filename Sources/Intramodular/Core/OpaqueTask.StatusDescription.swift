@@ -82,6 +82,7 @@ extension OpaqueTask.StatusDescription {
     public enum Comparison {
         case idle
         case active
+        case failure
         
         public static func == (
             lhs: OpaqueTask.StatusDescription?,
@@ -93,12 +94,16 @@ extension OpaqueTask.StatusDescription {
                         return lhs == .idle
                     case .active:
                         return lhs.isActive
+                    case .failure:
+                        return lhs.isFailure
                 }
             } else {
                 switch rhs {
                     case .idle:
                         return true
                     case .active:
+                        return false
+                    case .failure:
                         return false
                 }
             }
