@@ -79,7 +79,8 @@ extension OpaqueTask.StatusDescription {
 }
 
 extension OpaqueTask.StatusDescription {
-    public enum _Comparison {
+    public enum Comparison {
+        case idle
         case active
         
         public static func == (
@@ -88,11 +89,18 @@ extension OpaqueTask.StatusDescription {
         ) -> Bool {
             if let lhs = lhs {
                 switch rhs {
+                    case .idle:
+                        return lhs == .idle
                     case .active:
                         return lhs.isActive
                 }
             } else {
-                return false
+                switch rhs {
+                    case .idle:
+                        return true
+                    case .active:
+                        return false
+                }
             }
         }
     }
