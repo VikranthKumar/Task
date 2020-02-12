@@ -16,6 +16,10 @@ open class OpaqueTask: CustomCombineIdentifierConvertible {
         fatalError()
     }
 
+    open func cancel() {
+        
+    }
+    
     init() {
         
     }

@@ -42,11 +42,11 @@ open class Task<Success, Error: Swift.Error>: OpaqueTask {
     }
     
     public func start() {
-        fatalError()
+
     }
     
-    public func cancel() {
-        fatalError()
+    override open func cancel() {
+
     }
 }
 
