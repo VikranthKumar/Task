@@ -2,6 +2,7 @@
 // Copyright (c) Vatsal Manot
 //
 
+import Combine
 import Merge
 import SwiftUIX
 
@@ -79,7 +80,21 @@ extension Task: Publisher {
     open func receive<S: Subscriber>(
         subscriber: S
     ) where S.Input == Output, S.Failure == Failure {
-        objectWillChange
+        if statusValueSubject.value.isTerminal {
+            if let output = statusValueSubject.value.output {
+                Just(output)
+                    .setFailureType(to: Failure.self)
+                    .receive(subscriber: subscriber)
+            } else if let failure = statusValueSubject.value.failure {
+                Fail<Output, Failure>(error: failure)
+                    .receive(subscriber: subscriber)
+            } else {
+                return assertionFailure()
+            }
+        }
+        
+        statusValueSubject
+            .filter({ !$0.isIdle })
             .setFailureType(to: Failure.self)
             .flatMap({ status -> AnyPublisher<Output, Failure> in
                 if let output = status.output {
@@ -90,8 +105,7 @@ extension Task: Publisher {
                     return Fail<Output, Failure>(error: failure)
                         .eraseToAnyPublisher()
                 } else {
-                    return Empty<Output, Failure>()
-                        .eraseToAnyPublisher()
+                    fatalError()
                 }
             })
             .receive(subscriber: subscriber)
