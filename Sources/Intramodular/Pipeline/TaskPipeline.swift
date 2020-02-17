@@ -7,25 +7,20 @@ import SwiftUIX
 
 public final class TaskPipeline: ObservableObject {
     public let cancellables = Cancellables()
+    public let taskStatuses = PassthroughSubject<(name: TaskName, status: OpaqueTask.StatusDescription), Never>()
     
     private weak var parent: TaskPipeline?
     
     @Published private var taskHistory: [TaskName: [OpaqueTask.StatusDescription]] = [:]
     @Published private var taskMap: [TaskName: OpaqueTask] = [:]
     
-    public let taskStatuses = PassthroughSubject<(name: TaskName, status: OpaqueTask.StatusDescription), Never>()
-    
     public init(parent: TaskPipeline? = nil) {
         self.parent = parent
     }
     
     public subscript(_ taskName: TaskName) -> OpaqueTask? {
-        if Thread.isMainThread {
-            return taskMap[taskName]
-        } else {
-            return DispatchQueue.main.sync {
-                taskMap[taskName]
-            }
+        Thread.isMainThread ? taskMap[taskName] : DispatchQueue.main.sync {
+            taskMap[taskName]
         }
     }
     
@@ -37,7 +32,7 @@ public final class TaskPipeline: ObservableObject {
             } else {
                 self.taskMap[task.name] = task
             }
-                        
+            
             self.taskStatuses.send((task.name, task.statusDescription))
             
             self.objectWillChange.send()
