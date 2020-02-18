@@ -19,9 +19,7 @@ public final class TaskPipeline: ObservableObject {
     }
     
     public subscript(_ taskName: TaskName) -> OpaqueTask? {
-        Thread.isMainThread ? taskMap[taskName] : DispatchQueue.main.sync {
-            taskMap[taskName]
-        }
+        taskMap[taskName]
     }
     
     func track<Success, Error>(_ task: Task<Success, Error>) {
