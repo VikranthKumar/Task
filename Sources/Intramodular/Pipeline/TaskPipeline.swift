@@ -39,6 +39,10 @@ public final class TaskPipeline: ObservableObject {
 }
 
 extension TaskPipeline {
+    public func cancelAllTasks() {
+        taskMap.values.forEach({ $0.cancel() })
+    }
+
     public func lastStatus(for taskName: TaskName) -> OpaqueTask.StatusDescription? {
         taskHistory[taskName]?.last
     }
