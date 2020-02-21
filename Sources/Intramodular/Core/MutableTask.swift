@@ -9,16 +9,11 @@ import SwiftUIX
 open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     public typealias Body = (MutableTask) -> AnyCancellable
     
-    private let previousTask: OpaqueTask?
-    private let previousTaskCancellable: SingleAssignmentAnyCancellable
     private let body: Body
-    private var bodyCancellable: SingleAssignmentAnyCancellable
+    private var bodyCancellable: AnyCancellable?
     
-    public required init(previous: OpaqueTask? = nil, body: @escaping Body) {
-        self.previousTask = previous
-        self.previousTaskCancellable = .init()
+    public required init(body: @escaping Body) {
         self.body = body
-        self.bodyCancellable = .init()
         
         super.init(pipeline: nil)
     }
@@ -36,7 +31,7 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
             statusValueSubject.send(completion: .finished)
             
             queue.async {
-                self.bodyCancellable.cancel()
+                self.bodyCancellable?.cancel()
                 self.cancellables.cancel()
             }
         }
@@ -49,26 +44,14 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
         func _start() {
             send(.started)
 
-            bodyCancellable.set(body(self as! Self))
+            bodyCancellable = body(self as! Self)
         }
         
         guard statusDescription == .idle else {
             return
         }
         
-        if let previous = previousTask {
-            previous.onSuccess {
-                _start()
-            }
-            
-            previous.onFailure {
-                self.queue.async {
-                    self.cancel()
-                }
-            }
-        } else {
-            _start()
-        }
+        _start()
     }
     
     /// Publishes progress.

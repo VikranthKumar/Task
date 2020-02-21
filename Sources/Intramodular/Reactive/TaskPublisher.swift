@@ -37,7 +37,7 @@ open class TaskPublisher<Success, Error: Swift.Error>: Publisher {
     public required convenience init(_ attemptToFulfill: @escaping (@escaping
         (Result<Success, Error>) -> ()) -> Void) {
         self.init { (task: MutableTask<Success, Error>) in
-            attemptToFulfill { result in
+            attemptToFulfill { [unowned task] result in
                 switch result {
                     case .success(let value):
                         task.succeed(with: value)
@@ -53,7 +53,7 @@ open class TaskPublisher<Success, Error: Swift.Error>: Publisher {
     public required convenience init(_ attemptToFulfill: @escaping (@escaping
         (Result<Success, Error>) -> ()) -> AnyCancellable) {
         self.init { (task: MutableTask<Success, Error>) in
-            return attemptToFulfill { result in
+            return attemptToFulfill { [unowned task] result in
                 switch result {
                     case .success(let value):
                         task.succeed(with: value)
