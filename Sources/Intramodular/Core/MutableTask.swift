@@ -10,7 +10,7 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     public typealias Body = (MutableTask) -> AnyCancellable
     
     private let body: Body
-    private var bodyCancellable: AnyCancellable?
+    private var bodyCancellable: AnyCancellable = .empty()
     
     public required init(body: @escaping Body) {
         self.body = body
@@ -31,7 +31,7 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
             statusValueSubject.send(completion: .finished)
             
             queue.async {
-                self.bodyCancellable?.cancel()
+                self.bodyCancellable.cancel()
                 self.cancellables.cancel()
             }
         }
@@ -43,7 +43,7 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     public override func start() {
         func _start() {
             send(.started)
-
+            
             bodyCancellable = body(self as! Self)
         }
         
