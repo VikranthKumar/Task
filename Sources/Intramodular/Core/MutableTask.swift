@@ -69,7 +69,21 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
         }
     }
     
+    open func willSend(status: Status) {
+        
+    }
+
+    open func didSend(status: Status) {
+        
+    }
+    
     public func send(status: Status) {
+        willSend(status: status)
+        
+        defer {
+            didSend(status: status)
+        }
+        
         if let output = status.output {
             statusValueSubject.send(.init(output))
         } else if let failure = status.failure {
