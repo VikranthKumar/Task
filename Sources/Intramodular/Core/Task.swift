@@ -42,11 +42,11 @@ open class Task<Success, Error: Swift.Error>: OpaqueTask {
     }
     
     public func start() {
-
+        
     }
     
     override open func cancel() {
-
+        
     }
 }
 
@@ -119,5 +119,32 @@ extension Task: Subscription {
         }
         
         start()
+    }
+}
+
+// MARK: - API -
+
+extension Task {
+    public func onStatus(receiveValue: @escaping (Status) -> ()) {
+        objectWillChange.sink(receiveValue: receiveValue)
+            .store(in: cancellables)
+    }
+    
+    public func onStatus(
+        _ status: StatusDescription,
+        perform action: @escaping (Status) -> ()
+    ) {
+        objectWillChange.sink { _status in
+            if status == _status.description  {
+                action(_status)
+            }
+        }
+        .store(in: cancellables)
+    }
+    
+    public func toSuccessErrorPublisher() -> AnyPublisher<Success, Error> {
+        self.compactMap({ Task.Status($0).successValue })
+            .mapError({ Task.Status($0).errorValue! })
+            .eraseToAnyPublisher()
     }
 }

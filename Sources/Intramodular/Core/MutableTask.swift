@@ -18,6 +18,57 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
         super.init(pipeline: nil)
     }
     
+    required convenience public init(action: @escaping () -> Success) {
+        self.init { (task: MutableTask<Success, Error>) in
+            task.start()
+            task.succeed(with: action())
+            
+            return .empty()
+        }
+    }
+    
+    required convenience public init(_ attemptToFulfill: @escaping (@escaping
+        (Result<Success, Error>) -> ()) -> Void) {
+        self.init { (task: MutableTask<Success, Error>) in
+            attemptToFulfill { result in
+                switch result {
+                    case .success(let value):
+                        task.succeed(with: value)
+                    case .failure(let value):
+                        task.fail(with: value)
+                }
+            }
+            
+            return .init(EmptyCancellable())
+        }
+    }
+    
+    required convenience public init(_ attemptToFulfill: @escaping (@escaping
+        (Result<Success, Error>) -> ()) -> AnyCancellable) {
+        self.init { (task: MutableTask<Success, Error>) in
+            return attemptToFulfill { result in
+                switch result {
+                    case .success(let value):
+                        task.succeed(with: value)
+                    case .failure(let value):
+                        task.fail(with: value)
+                }
+            }
+        }
+    }
+    
+    required convenience public init(_ publisher: AnyPublisher<Success, Error>) {
+        self.init { attemptToFulfill in
+            publisher.sinkResult(attemptToFulfill)
+        }
+    }
+    
+    required convenience public init<P: Publisher>(_ publisher: P) where P.Output == Success, P.Failure == Error {
+        self.init { attemptToFulfill in
+            publisher.sinkResult(attemptToFulfill)
+        }
+    }
+    
     public func send(status: Status) {
         if let output = status.output {
             statusValueSubject.send(.init(output))
@@ -40,9 +91,9 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     }
     
     /// Start the task.
-    public override func start() {
+    final override public func start() {
         func _start() {
-            send(.started)
+            send(status: .started)
             
             bodyCancellable = body(self as! Self)
         }
@@ -55,22 +106,22 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     }
     
     /// Publishes progress.
-    public func progress(_ progress: Progress?) {
+    final public func progress(_ progress: Progress?) {
         send(status: .progress(progress))
     }
     
     /// Publishes a success.
-    public func succeed(with value: Success) {
+    final public func succeed(with value: Success) {
         send(status: .success(value))
     }
     
     /// Cancel the task.
-    public override func cancel() {
+    final override public func cancel() {
         send(status: .canceled)
     }
     
     /// Publishes a failure.
-    public func fail(with error: Error) {
+    final public func fail(with error: Error) {
         send(status: .error(error))
     }
 }
@@ -106,5 +157,38 @@ extension MutableTask: Subject {
     
     public func send(subscription: Subscription) {
         subscription.request(.unlimited)
+    }
+}
+
+// MARK: - API -
+
+extension MutableTask {
+    final public class func just(_ result: Result<Success, Error>) -> Self {
+        self.init { attemptToFulfill in
+            attemptToFulfill(result)
+        }
+    }
+    
+    final public class func success(_ success: Success) -> Self {
+        .just(.success(success))
+    }
+    
+    final public class func error(_ error: Error) -> Self {
+        .just(.failure(error))
+    }
+}
+
+extension MutableTask where Success == Void {
+    final public class func action(_ action: @escaping (MutableTask<Success, Error>) -> Void) -> Self {
+        .init { (task: MutableTask<Success, Error>) in
+            task.start()
+            task.succeed(with: action(task))
+            
+            return .empty()
+        }
+    }
+    
+    final public class func action(_ action: @escaping () -> Void) -> Self {
+        .action({ _ in action() })
     }
 }
