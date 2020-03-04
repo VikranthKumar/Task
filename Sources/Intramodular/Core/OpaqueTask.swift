@@ -5,8 +5,9 @@
 import Merge
 import SwiftUIX
 
-open class OpaqueTask: CustomCombineIdentifierConvertible {
+open class OpaqueTask: CustomCombineIdentifierConvertible, Identifiable {
     public let cancellables = Cancellables()
+    public let id = UUID()
 
     public var statusDescription: StatusDescription {
         fatalError()

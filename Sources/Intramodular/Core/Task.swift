@@ -7,7 +7,7 @@ import Merge
 import SwiftUIX
 
 /// An opinionated definition of a task.
-open class Task<Success, Error: Swift.Error>: OpaqueTask {
+open class Task<Success, Error: Swift.Error>: OpaqueTask {    
     let queue = DispatchQueue(label: "com.vmanot.Task")
     let statusValueSubject = CurrentValueSubject<Status, Never>(.idle)
     
