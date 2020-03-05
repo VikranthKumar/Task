@@ -18,6 +18,10 @@ public struct TaskName: Hashable {
             self.base = .init(base)
         }
     }
+    
+    public func _cast<T>(to type: T.Type) -> T? {
+        base.base as? T
+    }
 }
 
 // MARK: - Helpers -
