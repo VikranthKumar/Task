@@ -9,18 +9,17 @@ import SwiftUIX
 public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
     private let action: () -> Task<Success, Error>?
     private let label: (Task<Success, Error>.Status) -> Label
-    
+
+    @OptionalEnvironmentObject var taskPipeline: TaskPipeline?
+    @OptionalObservedObject var currentTask: Task<Success, Error>?
+
+    @Environment(\.buttonStyle) var buttonStyle
+    @Environment(\.isEnabled) var isEnabled
     @Environment(\.taskName) var taskName
-    
     @Environment(\.taskDisabled) var taskDisabled
     @Environment(\.taskInterruptible) var taskInterruptible
     @Environment(\.taskRestartable) var taskRestartable
-    
-    @Environment(\.buttonStyle) var buttonStyle
-    
-    @OptionalEnvironmentObject var taskPipeline: TaskPipeline?
-    @OptionalObservedObject var currentTask: Task<Success, Error>?
-    
+
     public var task: Task<Success, Error>? {
         if let currentTask = currentTask {
             return currentTask
@@ -51,7 +50,7 @@ public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
                 )
             )
         }
-        .disabled(taskDisabled)
+        .disabled(!isEnabled || taskDisabled)
     }
     
     private func trigger() {
