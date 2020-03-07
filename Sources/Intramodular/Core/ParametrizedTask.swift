@@ -37,7 +37,7 @@ extension ParametrizedTask where Success == Void {
 }
 
 extension ParametrizedTask {
-    public func unwrap(_ body: (Parameter) -> ()) -> Void {
+    public func withParameter(_ body: (Parameter) -> ()) -> Void {
         if let parameter = parameter {
             body(parameter)
         } else {
