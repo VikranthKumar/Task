@@ -108,5 +108,30 @@ extension OpaqueTask.StatusDescription {
                 }
             }
         }
+        
+        public static func != (
+            lhs: OpaqueTask.StatusDescription?,
+            rhs: Self
+        ) -> Bool {
+            if let lhs = lhs {
+                switch rhs {
+                    case .idle:
+                        return lhs != .idle
+                    case .active:
+                        return !lhs.isActive
+                    case .failure:
+                        return !lhs.isFailure
+                }
+            } else {
+                switch rhs {
+                    case .idle:
+                        return false
+                    case .active:
+                        return true
+                    case .failure:
+                        return true
+                }
+            }
+        }
     }
 }
