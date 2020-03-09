@@ -36,6 +36,10 @@ public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
             ?? .idle
     }
     
+    public var lastTaskStatusDescription: OpaqueTask.StatusDescription? {
+        taskName.flatMap({ taskPipeline?.lastStatus(for: $0) })
+    }
+    
     @State var taskRenewalSubscription: AnyCancellable?
     
     public var body: some View {
@@ -46,7 +50,8 @@ public struct TaskButton<Success, Error: Swift.Error, Label: View>: View {
                     isDisabled: taskDisabled,
                     isInterruptible: taskInterruptible,
                     isRestartable: taskRestartable,
-                    status: taskStatusDescription
+                    status: taskStatusDescription,
+                    lastStatus: lastTaskStatusDescription
                 )
             )
         }

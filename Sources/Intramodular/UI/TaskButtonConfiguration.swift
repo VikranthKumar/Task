@@ -13,4 +13,5 @@ public struct TaskButtonConfiguration {
     public let isRestartable: Bool
     
     public let status: OpaqueTask.StatusDescription
+    public let lastStatus: OpaqueTask.StatusDescription?
 }
