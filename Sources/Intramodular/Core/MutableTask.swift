@@ -72,7 +72,7 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
     open func willSend(status: Status) {
         
     }
-
+    
     open func didSend(status: Status) {
         
     }
