@@ -92,12 +92,29 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
             assertionFailure()
         }
         
-        if status.isTerminal {
-            statusValueSubject.send(completion: .finished)
-            
-            queue.async {
-                self.bodyCancellable.cancel()
-                self.cancellables.cancel()
+        switch status {
+            case .idle:
+                assertionFailure()
+            case .started:
+                statusValueSubject.send(.started)
+            case .progress(let progress):
+                statusValueSubject.send(.progress(progress))
+            case .canceled: do {
+                queue.async {
+                    self.bodyCancellable.cancel()
+                    self.cancellables.cancel()
+                }
+                
+                statusValueSubject.send(.canceled)
+                statusValueSubject.send(completion: .finished)
+            }
+            case .success(let success): do {
+                statusValueSubject.send(.success(success))
+                statusValueSubject.send(completion: .finished)
+            }
+            case .error(let error): do {
+                statusValueSubject.send(.error(error))
+                statusValueSubject.send(completion: .finished)
             }
         }
         
