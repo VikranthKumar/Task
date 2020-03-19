@@ -83,15 +83,7 @@ open class MutableTask<Success, Error: Swift.Error>: Task<Success, Error> {
         defer {
             didSend(status: status)
         }
-        
-        if let output = status.output {
-            statusValueSubject.send(.init(output))
-        } else if let failure = status.failure {
-            statusValueSubject.send(.init(failure))
-        } else {
-            assertionFailure()
-        }
-        
+                
         switch status {
             case .idle:
                 assertionFailure()
