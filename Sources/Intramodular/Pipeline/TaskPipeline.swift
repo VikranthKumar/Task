@@ -39,6 +39,10 @@ public final class TaskPipeline: ObservableObject {
 }
 
 extension TaskPipeline {
+    public func cancel(_ taskName: TaskName) {
+        taskMap[taskName]?.cancel()
+    }
+    
     public func cancelAllTasks() {
         taskMap.values.forEach({ $0.cancel() })
     }

@@ -64,6 +64,8 @@ extension Task {
             return assertionFailure("\(self) is already part of an pipleine")
         }
         
+        pipeline.cancel(name)
+
         self.pipeline = pipeline
     }
 }
