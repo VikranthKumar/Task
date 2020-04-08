@@ -21,6 +21,7 @@ public protocol TaskButtonStyle: opaque_TaskButtonStyle {
 }
 
 extension TaskButtonStyle {
+    @inlinable
     public func receive(status: TaskButtonStatus) {
         
     }
@@ -41,6 +42,7 @@ fileprivate struct TaskButtonStyleEnvironmentKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
+    @usableFromInline
     var buttonStyle: opaque_TaskButtonStyle {
         get {
             self[TaskButtonStyleEnvironmentKey]
@@ -53,6 +55,12 @@ extension EnvironmentValues {
 // MARK: - Concrete Implementations -
 
 public struct DefaultTaskButtonStyle: TaskButtonStyle {
+    @inlinable
+    public init() {
+        
+    }
+    
+    @inlinable
     public func makeBody(configuration: TaskButtonConfiguration) -> some View {
         return configuration.label
     }
@@ -61,6 +69,7 @@ public struct DefaultTaskButtonStyle: TaskButtonStyle {
 // MARK: - API -
 
 extension View {
+    @inlinable
     public func buttonStyle<Style: TaskButtonStyle>(_ style: Style) -> some View {
         environment(\.buttonStyle, style)
     }
