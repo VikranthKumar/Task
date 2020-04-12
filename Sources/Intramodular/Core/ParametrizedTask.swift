@@ -13,7 +13,7 @@ open class ParametrizedTask<Parameter, Success, Error: Swift.Error>: MutableTask
     ) {
         super.init(body: { body($0 as! ParametrizedTask) })
     }
-    
+
     convenience public init(
         _ parameter: Parameter,
         body: @escaping (ParametrizedTask) -> AnyCancellable
